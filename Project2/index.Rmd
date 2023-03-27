@@ -1,0 +1,224 @@
+---
+title: "Project 2"
+subtitle: 'STATS 220 Semester One 2023'
+author: "Ben Lu"
+date: "2023-03-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, error = FALSE, warning = FALSE)
+library(magick)
+library(tidyverse)
+library(scales)
+```
+
+```{r}
+learning_csv_file <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2MZ24A34PwW5x6jVGo-mZBnforjcy9qbN0Xcd-kbgBkA5pfxIAqrySzwItCCRSuZi7dAm2o3R-rc_/pub?output=csv"
+learning_data <- read_csv(learning_csv_file) %>%
+  rename(learning_importance = 2,
+         reliable_connections = 3,
+         learning_hours = 4,
+         personality_type = 5,
+         worker_type = 6,
+         qualification = 7,
+         learning_application = 8,
+         learning_reflection = 9)
+
+#Total number of respondents who completed survey
+num_of_respondents <- nrow(learning_data)
+
+#Number of respondents who are characterised as introverts
+num_of_introverts <- sum(learning_data$personality_type == 'Introvert')
+
+#Number of respondents who are characterised as extroverts
+num_of_extroverts <- sum(learning_data$personality_type == 'Extrovert')
+
+#Respondents characterised by work preference
+num_of_blue_collar <- sum(learning_data$worker_type == 'Blue-collar worker')
+
+num_of_white_collar <- sum(learning_data$worker_type == 'White-collar worker')
+
+#Respondents characterised by qualification type
+num_of_none <- sum(learning_data$qualification == 'None')
+
+num_of_HSDiploma <- sum(learning_data$qualification == 'High school diploma')
+
+num_of_trade <- sum(learning_data$qualification == 'Trades certificate')
+
+num_of_diploma <- sum(learning_data$qualification == 'Polytechnic/university diploma')
+
+num_of_bachelors <- sum(learning_data$qualification == 'Bachelors degree')
+
+num_of_masters <- sum(learning_data$qualification == 'Masters degree')
+
+num_of_PHD <- sum(learning_data$qualification == 'Doctor of Philosophy')
+
+#Number of respondents who reflect on their learning
+num_of_reflections <- sum(learning_data$learning_reflection == 'Yes - I analyze the conversation and research ways to create a better future outcome.')
+
+num_of_noReflections <- sum(learning_data$learning_reflection == "No - It's not necessary because the I experience I gained is sufficient for improvement.")
+
+#Summary values of learning preparation for networking
+mean_learning_hours <- learning_data$learning_hours %>% 
+  mean() %>%
+  round(1)
+
+min_learning_hours <- learning_data$learning_hours %>% 
+  min() %>%
+  round(1)
+
+max_learning_hours <- learning_data$learning_hours %>% 
+  max() %>%
+  round(1)
+```
+
+## Foreword
+*Each of us are artistic beings and we all share a collective interest in absorbing the world around us and manifesting our creativity to entice the world. Building connections and expanding our network is more than just a type of skill that can be learnt from reading books or through practice, but also a magnificent art that allows us to display vibrant and colourful hues.*
+
+## Introduction
+Our topic of interest is how people *learn to network*, and we look forward to delving into some of the key insights from our data collection. Learning motivation, theory, practice and reflection are the core ingredients of the learning process. We are interested in how our *learning behaviour* may be influenced by our personality type, our education and our work preference. In examining our analytics, we notice that the theory and reflection aspect of the learning process is very much influenced by our unique qualities. 
+
+As part of our survey design, we followed validation rules for responses such that respondents could only input reasonable values. For example, when asked *‘How many hours would you spend on researching how to network from tutorials, attending workshops or other forms of guidance?’* the input value is required to be within an acceptable range of *0 to 50*. This range accounts for the assumption that some respondents are only practical minded, and prefer a hands-on approach while others may prefer to do extensive research before applying their knowledge. 
+
+However, we were unable to obtain *‘tidy’* data from our categorical response of the preferred type of practical learning as it combined multiple values from the respondents. In example, if we obtain the data that an introvert responds events and clubs, the Google form combines the responses *‘Events’* and *‘Clubs’* into a single value *‘Events, Clubs’*. This clearly indicates data which is not *‘tidy’* as we have to perform coding operations to separate *‘Events, Clubs’* into individual values before generating data insights. <br> [Please see our survey](https://forms.gle/q2EgxqHDyyghzVt4A)
+
+## Analytics
+
+<!-- Section of respondents' characteristics -->
+### Key Statistics of Respondents’ Characteristics
+**Total Respondents** <br>
+Total number of respondents: `r num_of_respondents` <br><br>
+**Personality Type** <br>
+Number of Introverts: `r num_of_introverts` <br>
+Number of Extroverts: `r num_of_extroverts` <br> <br>
+**Job Preferences** <br>
+Blue-collar: `r num_of_blue_collar` <br>
+White-collar: `r num_of_white_collar` <br> <br>
+**Qualification** <br>
+None: `r num_of_none` <br>
+High School Diploma: `r num_of_HSDiploma` <br>
+Trades Certificate: `r num_of_trade` <br>
+Polytechnic/University Diploma: `r num_of_diploma` <br>
+Bachelor’s Degree: `r num_of_bachelors` <br>
+Master’s Degree: `r num_of_masters` <br>
+Doctor of Philosophy: `r num_of_PHD` <br> <br>
+
+<!--Section of Summary Statistics-->
+### Summary Statistics
+On average, the respondents would require `r mean_learning_hours` hours of theory preparation before attempting to reach out and gain practical experience. <br>
+Out of all the respondents who prefer to spend less time preparing (researching, workshops, etc...), the least amount of time required is `r min_learning_hours` hour(s). <br>
+Out of all the respondents who prefer to study and prepare extensively, the most number of required theory preparation is `r max_learning_hours` hours.
+
+<!--Bar Charts-->
+### Key Findings
+<!--Bar Chart of Frequency of Required Preparation Hours Prior to Practice-->
+```{r fig.width = 12, fig.height = 6}
+ggplot(data = learning_data) +
+  geom_bar(aes(x = learning_hours, 
+               fill = personality_type)) +
+  scale_fill_manual(values = c("#69c6ff", "#0099f9")) +
+  labs(title = "Frequency of Required Preparation Hours Prior to Practice",
+       x = "Required Number of Preparation Hours",
+       y = "Frequency",
+       caption = "Number of hours spent on researching, workshops, etc...",
+       fill = "Personality") +
+  theme(
+    plot.title = element_text(color = "#0099f9", size = 20),
+    plot.caption = element_text(face = "bold"),
+    text = element_text(size = 20)
+  ) 
+```
+The results of the relationship between the amount of preparation hours required and personality type suggests that respondents who identify as introverts are more willing to extensively research and attend workshops on networking before attending social gatherings such as clubs and events or reach out to potential employers on internet platforms. This shows that our personality type affects our learning behavior as introverts tend to prefer to plan extensively.
+
+<!-- Bar Chart of Frequency of Learning Reflection (Distinguided by Personality)-->
+```{r fig.width = 12, fig.height = 6}
+ggplot(data = learning_data) +
+  geom_bar(aes(x = learning_reflection, 
+               fill = personality_type)) +
+  scale_fill_manual(values = c("#69c6ff", "#0099f9")) +
+  labs(title = "Frequency of Learning Reflection (Distinguided by Personality)",
+       x = "Learning Reflection",
+       y = "Frequency",
+       caption = "Wander if people reflect on their practical experience?",
+       fill = "Personality Type") +
+  scale_x_discrete(labels=c('No', 'Yes')) +
+  theme(
+    plot.title = element_text(color = "#0099f9", size = 20),
+    plot.caption = element_text(face = "bold"),
+    text = element_text(size = 20)
+  ) 
+```
+Reflections are an important aspect of learning and it is an effective process that enables us to make critical changes to our skill. Although the results suggests that the number of respondents who takes time to reflect is almost twice the number of respondents who do not reflect, there were key distinctions between those who identify as introverts and extroverts. Of those who identify as introverts, the number of those who reflect on their learning is comparatively much larger than those who don't. However, the reverse is true for those who identify as extroverts, as the number of those don't reflect on their learning is almost twice as large as those who do. It appears that our personality type contributes significantly to whether we prefer to reflect on our 'work' and analyze the sequences to make changes where appropriate. 
+
+<!-- Bar Chart of Frequency of Learning Reflection (Distinguished by Education)-->
+```{r fig.width = 12, fig.height = 6}
+ggplot(data = learning_data) +
+  geom_bar(aes(x = learning_reflection, 
+               fill = qualification)) +
+  scale_fill_manual(values = c("#69c6ff", "#0099f9","pink", "yellow","orange","purple")) +
+  labs(title = "Frequency of Learning Reflection (Distinguished by Education)",
+       x = "Learning Reflection",
+       y = "Frequency",
+       caption = "Wander if people reflect on their practical experience?",
+       fill = "Qualification") +
+  scale_x_discrete(labels=c('No', 'Yes')) +
+  theme(
+    plot.title = element_text(color = "#0099f9", size = 20),
+    plot.caption = element_text(face = "bold"),
+    text = element_text(size = 20)
+  )  
+```
+Comparatively speaking, of those who currently hold (or pursuing) a bachelor's degree, the number of those who reflect on their learning is much larger than the number of those that don't. There appears to be equal proportions of those who reflect on their learning and those who don't for holders of trade certificate or polytechnic diploma. 
+
+<!--Bar Chart of Frequency of Importance of Learning to Network (Distinguished by Personality)-->
+```{r fig.width = 12, fig.height = 6}
+ggplot(data = learning_data) +
+  geom_bar(aes(x = learning_importance, 
+               fill = personality_type)) +
+  scale_fill_manual(values = c("#69c6ff", "#0099f9")) +
+  labs(title = "Frequency of Importance of Learning to Network (Distinguished by Personality)",
+       x = "Importance Rating",
+       y = "Frequency",
+       caption = "1 - least important, 10 - most important",
+       fill = "Personality") +
+  theme(
+    plot.title = element_text(color = "#0099f9", size = 20),
+    plot.caption = element_text(face = "bold"),
+    text = element_text(size = 20)
+  ) 
+```
+The factor of personality type may play a significant role in whether we spend less time or countless hours in researching, attending workshops, etc..., most would agree that it's very important to network. This means that the motivation to learn is not a key issue, as people with different personality types have their own style of learning. Some prefer to rely more heavily on the hands on approach than others, their learning places a greater emphasis on practical experience than theory or reflection. While others may prefer to study and plan, and take time to reflect on their learning.
+
+<!--Learning Reflection Section-->
+## Learning Reflection
+One practical aspect that I learnt from this module was the importance of creating *‘tidy’* data. This has taught me the practical significance of using *validation rules* for responses. For the data collection process, some respondents are likely to input unreasonable values which makes it necessary to follow the validation rules to help filter out unwanted data. I’ve learnt that this has practical applications to enable the entire process of generating bar charts less time consuming. <br>
+This project demonstrates creativity as the web-page design with the blue-colored border shadows around the text paragraphs are quite appealing. The foreword section introduces the subject of interest in an eye-catching way and explains the purpose of the report. One interesting finding was despite the differences in learning behaviour between those who identify as introverts or extroverts, they all share the belief that learning to network is important, but they simply have their own learning preferences. <br>
+*Generative Artificial Intelligence* is creating unprecedented changes in how we work with data technologies. I’m keen on exploring how this new technology would help enable a much easier process in handling data and generating more visually compelling data visualisations. 
+
+
+<!-- CSS code section -->
+```{css}
+h2 {
+  color: #23c9ff;
+  text-align: left;
+}
+h3 {
+  color: #23c9ff;
+  text-align: left;
+}
+body {
+  font-family: "Helvitica";
+  font-size: 1.5em;
+  background-color: #f3f3f3;
+  color: #0099f9; 
+}
+p {
+  border: 0.5px solid #white;
+  box-shadow: 5px 5px 5px #23c9ff;
+  background: white;
+  font-size: 1.3em;
+  color: black;
+}
+
+```
